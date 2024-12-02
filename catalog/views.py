@@ -1,4 +1,5 @@
 from django.shortcuts import render
+from .models import Product
 
 # Create your views here.
 def index(request):
@@ -12,4 +13,9 @@ def contact_info(request):
         email = request.POST.get('email')
         message = request.POST.get('message')
         print(f'У вас новое сообщение от {name}({email}): {message}')
-    return render(request, 'catalog/contact.html')
+    return render(request, 'catalog/contacts.html')
+
+def product(request):
+    products_list = Product.objects.all()
+    context = {'object_list': products_list}
+    return render(request, 'catalog/product.html', context)

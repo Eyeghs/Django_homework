@@ -4,7 +4,7 @@ from django.db import models
 class Product(models.Model):
     product_name = models.CharField(max_length=100, verbose_name='Наименование')
     description = models.TextField(verbose_name='Описание')
-    avatar = models.ImageField(upload_to='products', verbose_name='Изображение')
+    avatar = models.ImageField(upload_to='products/', verbose_name='Изображение', null=True, blank=True)
     category = models.CharField(max_length=50, verbose_name='Категория')
     price_for_one = models.IntegerField(verbose_name='Цена за штуку')
     creation_date = models.DateField(verbose_name='Дата создания продукта')

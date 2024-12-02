@@ -17,14 +17,12 @@ Including another URLconf
 from django.conf import settings
 from django.conf.urls.static import static
 from django.contrib import admin
-from django.urls import path
-from catalog.views import index, contact_info
+from django.urls import path, include
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('', index),
-    path('contact/', contact_info),
+    path('', include('catalog.urls', namespace='index')),
+    path('contacts/', include('catalog.urls', namespace='contacts')),
+    path('product/', include('catalog.urls', namespace='product')),
 ]
-
-if settings.DEBUG:
-    urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
