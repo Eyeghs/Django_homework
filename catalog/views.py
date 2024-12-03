@@ -1,9 +1,12 @@
 from django.shortcuts import render
 from django.views.generic import CreateView, DeleteView, DetailView, ListView, UpdateView
-from .models import Product, Blog
+from .models import Product, Blog, Version
 from django.urls import reverse_lazy, reverse
 from pytils.translit import slugify
 from django.shortcuts import get_object_or_404, redirect
+from .forms import ProductForm, VersionForm
+from django.forms import inlineformset_factory
+from django.db.models import Prefetch
 # Create your views here.
 
 def contact_info(request):
@@ -16,7 +19,7 @@ def contact_info(request):
 
 class ProductCreateView(CreateView):
     model = Product
-    fields = ('product_name', 'description', 'category', 'price_for_one', 'avatar')
+    form_class = ProductForm
     success_url = reverse_lazy('catalog:index')
     
 class ProductDeleteView(DeleteView):
@@ -29,10 +32,46 @@ class ProductDetailView(DetailView):
 class ProductListView(ListView):
     model = Product
     
+    def get_queryset(self):
+        queryset = super().get_queryset()
+        return queryset.prefetch_related(
+            Prefetch('version_set', queryset=Version.objects.filter(version_state=True))
+        )
+        
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        products_with_versions = []
+        for product in context['object_list']:
+            current_version = product.version_set.first()  # Получаем текущую версию (если есть)
+            products_with_versions.append({
+                'product': product,
+                'current_version': current_version
+            })
+        context['products_with_versions'] = products_with_versions
+        return context
+    
 class ProductUpdateView(UpdateView):
     model = Product
-    fields = ('product_name', 'description', 'category', 'price_for_one', 'avatar')
+    form_class = ProductForm
     success_url = reverse_lazy('catalog:index')
+    
+    def get_context_data(self, **kwargs):
+        context_data = super().get_context_data(**kwargs)
+        SubjectForset = inlineformset_factory(Product, Version, form=VersionForm, extra=1)
+        if self.request.method == 'POST':
+            context_data['formset'] = SubjectForset(self.request.POST, instance=self.object)
+        else:
+            context_data['formset'] = SubjectForset(instance=self.object)
+        return context_data
+    
+    def form_valid(self, form):
+        formset = self.get_context_data()['formset']
+        self.object = form.save()
+        if formset.is_valid():
+            formset.instance = self.object
+            formset.save()
+        
+        return super().form_valid(form)
     
 class BlogCreateView(CreateView):
     model = Blog
