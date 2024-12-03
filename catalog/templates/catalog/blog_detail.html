@@ -1,0 +1,39 @@
+{% extends 'catalog/base.html '%}
+{% load tags %}
+    {% block content %}
+        <div class="col-12">
+            <div class="row">
+                <div class="col-6">
+                    <div class="card">
+                        <div class="card-header">
+                            <h3 class="card-title">
+                                Информация о статье
+                            </h3>
+                        </div>
+                        <div class="card-body">
+                            <table class="table">
+                                <tr>
+                                    <td>Заголовок:</td>
+                                    <td>{{ object.header }} ({{ object.slug }})</td>
+                                </tr>
+                                <tr>
+                                    <td>Содержимое:</td>
+                                    <td>{{ object.body }}</td>
+                                </tr>
+                                <tr>
+                                    <td>Превью:</td>
+                                    <td><img src="{{ object.preview|mediapath }}" class="img-fluid"></td>
+                                </tr>
+                                <tr>
+                                    <td>Количество просмотров:</td>
+                                    <td>{{ object.views_count }}</td>
+                                </tr>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <a href="{% url 'product:blog_index' %}"
+            class="btn btn-outline-primary">Назад</a> 
+    {% endblock %}
