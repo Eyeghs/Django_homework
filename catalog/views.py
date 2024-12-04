@@ -7,6 +7,7 @@ from django.shortcuts import get_object_or_404, redirect
 from .forms import ProductForm, VersionForm
 from django.forms import inlineformset_factory
 from django.db.models import Prefetch
+from django.contrib.auth.mixins import LoginRequiredMixin
 # Create your views here.
 
 def contact_info(request):
@@ -17,14 +18,22 @@ def contact_info(request):
         print(f'У вас новое сообщение от {name}({email}): {message}')
     return render(request, 'catalog/contacts.html')
 
-class ProductCreateView(CreateView):
+class ProductCreateView(LoginRequiredMixin ,CreateView):
     model = Product
     form_class = ProductForm
-    success_url = reverse_lazy('catalog:index')
+    success_url = reverse_lazy('catalog:catalog_index')
     
-class ProductDeleteView(DeleteView):
+    def form_valid(self, form):
+        if form.is_valid():
+            new_product = form.save(commit=False)
+            user = self.request.user.email
+            new_product.user_creator = user
+            new_product.save()
+        return super().form_valid(form)
+    
+class ProductDeleteView(LoginRequiredMixin, DeleteView):
     model = Product
-    success_url = reverse_lazy('catalog:index')
+    success_url = reverse_lazy('catalog:catalog_index')
     
 class ProductDetailView(DetailView):
     model = Product
@@ -50,10 +59,10 @@ class ProductListView(ListView):
         context['products_with_versions'] = products_with_versions
         return context
     
-class ProductUpdateView(UpdateView):
+class ProductUpdateView(LoginRequiredMixin, UpdateView):
     model = Product
     form_class = ProductForm
-    success_url = reverse_lazy('catalog:index')
+    success_url = reverse_lazy('catalog:catalog_index')
     
     def get_context_data(self, **kwargs):
         context_data = super().get_context_data(**kwargs)
@@ -83,7 +92,7 @@ class BlogCreateView(CreateView):
             new_mat = form.save()
             new_mat.slug = slugify(new_mat.header)
             new_mat.save()
-        return super().form_invalid(form)
+        return super().form_valid(form)
     
 class BlogDeleteView(DeleteView):
     model = Blog

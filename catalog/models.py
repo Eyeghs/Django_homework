@@ -1,6 +1,8 @@
 from django.db import models
 from django.utils import timezone
 
+from users.models import User
+
 
 
 class Product(models.Model):
@@ -11,6 +13,7 @@ class Product(models.Model):
     price_for_one = models.IntegerField(verbose_name='Цена за штуку')
     creation_date = models.DateField(verbose_name='Дата создания продукта', default=timezone.now)
     last_change_date = models.DateField(verbose_name='Дата последнего изменения', null=True, blank=True)
+    user_creator = models.CharField(max_length=100, verbose_name='Создатель', null=True, blank=True)
     
     def __str__(self):
         return f'{self.product_name}, {self.description}'
